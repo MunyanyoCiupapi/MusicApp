@@ -23,14 +23,38 @@
         <button onclick="window.location.href='beats.html'">Shop Beats</button>
     </div>
     <div class="container">
-        <h3>Try api</h3>
+        <!-- <h3>Try api</h3>
         <input type="text" id="input">
-        <button id="button">Get Data</button>
+        <button id="button">Get Data</button> -->
 
         <h3>Outside data</h3>
         <input type="text" id="outside"/>
         <button id="outsideButton">Get Data</button>
     </div>
+
+
+    <div class="container">
+        <h3>Live BTC & ETH Prices</h3>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Cryptocurrency</th>
+                    <th>Price (USD)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Bitcoin (BTC)</td>
+                    <td id="btc-price">Loading...</td>
+                </tr>
+                <tr>
+                    <td>Ethereum (ETH)</td>
+                    <td id="eth-price">Loading...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
     <footer>
         <p>&copy; 2023 Music Store. All rights reserved.</p>
     </footer>

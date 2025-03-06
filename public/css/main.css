@@ -35,3 +35,25 @@ footer {
   bottom: 0;
   width: 100%;
 }
+.table-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh; /* Adjust height to center vertically */
+  flex-direction: column;
+}
+
+table {
+  border-collapse: collapse;
+  width: 50%;
+  text-align: center;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+th {
+  background-color: #f4f4f4;
+}
