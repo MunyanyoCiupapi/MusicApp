@@ -14,12 +14,10 @@
       border-radius: 8px;
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
     }
-
     .form-container h2 {
       text-align: center;
       margin-bottom: 20px;
     }
-
     .form-container input {
       width: 100%;
       padding: 10px;
@@ -29,7 +27,6 @@
       background-color: #444;
       color: white;
     }
-
     .form-container button {
       width: 100%;
       padding: 10px;
@@ -41,32 +38,48 @@
       cursor: pointer;
       transition: background-color 0.3s;
     }
-
     .form-container button:hover {
       background-color: #009acd;
     }
-
     .form-container p {
       text-align: center;
       margin-top: 15px;
       font-size: 14px;
     }
-
     .form-container a {
       color: #00bfff;
       text-decoration: none;
     }
-
     .form-container a:hover {
       text-decoration: underline;
+    }
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #333;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 5px;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+      z-index: 9999;
+    }
+    .toast.show {
+      opacity: 1;
+    }
+    .toast.success {
+      background-color: #4caf50;
+    }
+    .toast.error {
+      background-color: #f44336;
     }
   </style>
 </head>
 <body>
-
   <div class="form-container">
     <h2>Login</h2>
-    <form action="/login" method="POST">
+    <form>
       <input type="text" name="username" placeholder="Username or Email" required />
       <input type="password" name="password" placeholder="Password" required />
       <button type="submit">Login</button>
@@ -74,5 +87,6 @@
     <p>Don't have an account? <a href="register.html">Sign up</a></p>
   </div>
 
+  <script src="../js/loginregister.js" defer></script>
 </body>
 </html>
