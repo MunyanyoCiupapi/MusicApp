@@ -38,7 +38,7 @@ connectToMongo().then(() => {
     res.send('Hello, World!');
   });
 
-  app.post('/register', async (req, res) => {
+  app.post('/api/register', async (req, res) => {
     const { username, email, password } = req.body;
 
     if (!username || !email || !password) {
@@ -64,7 +64,7 @@ connectToMongo().then(() => {
     }
   });
 
-  app.post('/login', async (req, res) => {
+  app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
