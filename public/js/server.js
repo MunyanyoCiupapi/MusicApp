@@ -25,18 +25,23 @@ if (!fs.existsSync('uploads')) {
   fs.mkdirSync('uploads');
 }
 
-
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/'); 
+    cb(null, 'uploads/');
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname); 
+    cb(null, Date.now() + '-' + file.originalname);
   }
 });
 const upload = multer({ storage: storage });
 
-
+// Middleware to check login before allowing uploads
+function requireLogin(req, res, next) {
+  if (!req.session.userId) {
+    return res.status(401).json({ message: 'You must be logged in to upload.' });
+  }
+  next();
+}
 
 connectToMongo().then(() => {
   const db = getDb();
@@ -116,30 +121,26 @@ connectToMongo().then(() => {
     }
   });
 
-
-  app.post('/upload', upload.single('audio'), async (req, res) => {
+  // Secure upload route
+  app.post('/upload', requireLogin, upload.single('audio'), async (req, res) => {
     const { title, price } = req.body;
     const file = req.file;
-  
+
     if (!title || !price || !file) {
       return res.status(400).json({ message: 'All fields are required.' });
     }
-  
-    if (!req.session.userId) {
-      return res.status(401).json({ message: 'You must be logged in to upload.' });
-    }
-  
+
     try {
       const beat = {
         title,
         price: parseFloat(price),
         audioPath: file.path,
         uploadedAt: new Date(),
-        ownerId: req.session.userId 
+        ownerId: req.session.userId
       };
-  
+
       const result = await db.collection('beats').insertOne(beat);
-  
+
       res.status(201).json({
         message: 'Beat uploaded successfully.',
         beat: { ...beat, _id: result.insertedId }
@@ -148,40 +149,36 @@ connectToMongo().then(() => {
       res.status(500).json({ message: 'Failed to upload beat.', error: err.message });
     }
   });
-  
+
   app.delete('/delete/:id', async (req, res) => {
     const beatId = req.params.id;
-  
+
     if (!req.session.userId) {
       return res.status(401).json({ message: 'Unauthorized. Please log in.' });
     }
-  
+
     try {
       const beat = await db.collection('beats').findOne({ _id: new ObjectId(beatId) });
-  
+
       if (!beat) {
         return res.status(404).json({ message: 'Beat not found.' });
       }
-  
+
       if (beat.ownerId !== req.session.userId) {
         return res.status(403).json({ message: 'You are not the owner of this beat.' });
       }
-  
-      // Delete beat
+
       await db.collection('beats').deleteOne({ _id: new ObjectId(beatId) });
-  
-      // Optionally delete file
+
       fs.unlink(beat.audioPath, err => {
         if (err) console.error('Error deleting file:', err);
       });
-  
+
       res.status(200).json({ message: 'Beat deleted successfully.' });
     } catch (err) {
       res.status(500).json({ message: 'Failed to delete beat.', error: err.message });
     }
   });
-
-
 
   app.get('/beats', async (req, res) => {
     try {
@@ -191,23 +188,17 @@ connectToMongo().then(() => {
       res.status(500).json({ message: 'Failed to fetch beats.' });
     }
   });
-  
 
   app.get('/me', (req, res) => {
     if (!req.session.userId) {
       return res.status(401).json({ message: 'Not logged in' });
     }
-  
+
     res.json({
       userId: req.session.userId,
       username: req.session.username
     });
   });
-  
-  
-  
-
-  
 
   app.listen(port, () => {
     console.log(`Server running on port ${port}`);
