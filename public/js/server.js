@@ -2,7 +2,9 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const { connectToMongo, getDb } = require('./db'); 
 const session = require('express-session');
-const validator = require('validator');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
@@ -11,12 +13,29 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
-
+app.use('/uploads', express.static('uploads'));
 app.use(session({
   secret: 'supersecret1234',
   resave: false,
   saveUninitialized: true,
 }));
+
+if (!fs.existsSync('uploads')) {
+  fs.mkdirSync('uploads');
+}
+
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/'); 
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname); 
+  }
+});
+const upload = multer({ storage: storage });
+
+
 
 connectToMongo().then(() => {
   const db = getDb();
@@ -38,7 +57,7 @@ connectToMongo().then(() => {
     res.send('Hello, World!');
   });
 
-  app.post('/api/register', async (req, res) => {
+  app.post('/register', async (req, res) => {
     const { username, email, password } = req.body;
 
     if (!username || !email || !password) {
@@ -64,7 +83,7 @@ connectToMongo().then(() => {
     }
   });
 
-  app.post('/api/login', async (req, res) => {
+  app.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
@@ -95,6 +114,56 @@ connectToMongo().then(() => {
       res.status(500).json({ message: "Error logging in: " + err });
     }
   });
+
+
+  app.post('/upload', upload.single('audio'), async (req, res) => {
+    const { title, price } = req.body;
+    const file = req.file;
+  
+    // Check if all fields are present
+    if (!title || !price || !file) {
+      return res.status(400).json({ message: 'All fields are required.' });
+    }
+  
+    try {
+      // Create beat object
+      const beat = {
+        title,
+        price: parseFloat(price),
+        audioPath: file.path,
+        uploadedAt: new Date()
+      };
+  
+
+      const result = await db.collection('beats').insertOne(beat);
+  
+
+      res.status(201).json({
+        message: 'Beat uploaded successfully.',
+        beat: { ...beat, _id: result.insertedId } 
+      });
+    } catch (err) {
+      console.error("Upload error:", err); 
+      res.status(500).json({
+        message: 'Failed to upload beat.',
+        error: err.message
+      });
+    }
+  });
+
+  app.get('/beats', async (req, res) => {
+    try {
+      const beats = await db.collection('beats').find().toArray();
+      res.status(200).json(beats);
+    } catch (err) {
+      res.status(500).json({ message: 'Failed to fetch beats.' });
+    }
+  });
+  
+  
+  
+
+  
 
   app.listen(port, () => {
     console.log(`Server running on port ${port}`);

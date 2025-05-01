@@ -25,27 +25,28 @@
 
   <div class="container">
     <h2>Available Beats</h2>
-    <div class="beat-list">
-      <div class="beat-card">
-        <h3>Beat 1</h3>
-        <p>$29.99</p>
-        <button class="register-btn">Add to Cart</button>
-      </div>
-      <div class="beat-card">
-        <h3>Beat 2</h3>
-        <p>$39.99</p>
-        <button class="register-btn">Add to Cart</button>
-      </div>
-      <div class="beat-card">
-        <h3>Beat 3</h3>
-        <p>$49.99</p>
-        <button class="register-btn">Add to Cart</button>
-      </div>
+
+    <!-- Upload Button -->
+    <button class="register-btn" onclick="showUploadForm()">Upload Beat</button>
+
+    <!-- Hidden Upload Form -->
+    <form id="uploadForm" enctype="multipart/form-data" style="display: none;">
+      <input type="text" id="title" name="title" placeholder="Beat Title" required />
+      <input type="number" id="price" name="price" placeholder="Price ($)" step="0.01" required />
+      <input type="file" id="beatUpload" name="audio" accept="audio/*" required />
+      <button type="submit" class="register-btn">Submit</button>
+    </form>
+
+    <!-- Beat List -->
+    <div class="beat-list" id="beatList">
+      <!-- Beats will load here -->
     </div>
   </div>
 
   <footer>
     <p>&copy; 2025 Music Store. All rights reserved.</p>
   </footer>
+
+  <script src="../js/beats.js"></script>
 </body>
 </html>
