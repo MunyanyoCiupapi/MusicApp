@@ -5,6 +5,7 @@ const session = require('express-session');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { ObjectId } = require('mongodb');
 require('dotenv').config();
 
 const app = express();
@@ -120,36 +121,67 @@ connectToMongo().then(() => {
     const { title, price } = req.body;
     const file = req.file;
   
-    // Check if all fields are present
     if (!title || !price || !file) {
       return res.status(400).json({ message: 'All fields are required.' });
     }
   
+    if (!req.session.userId) {
+      return res.status(401).json({ message: 'You must be logged in to upload.' });
+    }
+  
     try {
-      // Create beat object
       const beat = {
         title,
         price: parseFloat(price),
         audioPath: file.path,
-        uploadedAt: new Date()
+        uploadedAt: new Date(),
+        ownerId: req.session.userId 
       };
   
-
       const result = await db.collection('beats').insertOne(beat);
   
-
       res.status(201).json({
         message: 'Beat uploaded successfully.',
-        beat: { ...beat, _id: result.insertedId } 
+        beat: { ...beat, _id: result.insertedId }
       });
     } catch (err) {
-      console.error("Upload error:", err); 
-      res.status(500).json({
-        message: 'Failed to upload beat.',
-        error: err.message
-      });
+      res.status(500).json({ message: 'Failed to upload beat.', error: err.message });
     }
   });
+  
+  app.delete('/delete/:id', async (req, res) => {
+    const beatId = req.params.id;
+  
+    if (!req.session.userId) {
+      return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+    }
+  
+    try {
+      const beat = await db.collection('beats').findOne({ _id: new ObjectId(beatId) });
+  
+      if (!beat) {
+        return res.status(404).json({ message: 'Beat not found.' });
+      }
+  
+      if (beat.ownerId !== req.session.userId) {
+        return res.status(403).json({ message: 'You are not the owner of this beat.' });
+      }
+  
+      // Delete beat
+      await db.collection('beats').deleteOne({ _id: new ObjectId(beatId) });
+  
+      // Optionally delete file
+      fs.unlink(beat.audioPath, err => {
+        if (err) console.error('Error deleting file:', err);
+      });
+  
+      res.status(200).json({ message: 'Beat deleted successfully.' });
+    } catch (err) {
+      res.status(500).json({ message: 'Failed to delete beat.', error: err.message });
+    }
+  });
+
+
 
   app.get('/beats', async (req, res) => {
     try {
@@ -158,6 +190,18 @@ connectToMongo().then(() => {
     } catch (err) {
       res.status(500).json({ message: 'Failed to fetch beats.' });
     }
+  });
+  
+
+  app.get('/me', (req, res) => {
+    if (!req.session.userId) {
+      return res.status(401).json({ message: 'Not logged in' });
+    }
+  
+    res.json({
+      userId: req.session.userId,
+      username: req.session.username
+    });
   });
   
   
