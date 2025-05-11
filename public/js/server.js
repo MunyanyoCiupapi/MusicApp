@@ -35,7 +35,6 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// Middleware to check login before allowing uploads
 function requireLogin(req, res, next) {
   if (!req.session.userId) {
     return res.status(401).json({ message: 'You must be logged in to upload.' });

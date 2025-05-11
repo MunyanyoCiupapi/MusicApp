@@ -18,7 +18,7 @@
     "validator": "^13.15.0"
   },
   "scripts": {
-    "start": "node .",
+    "start": "node ./public/js/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
