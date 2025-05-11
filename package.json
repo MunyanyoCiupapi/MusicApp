@@ -4,7 +4,7 @@
   },
   "name": "musicapp",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "./public/js/server.js",
   "dependencies": {
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
